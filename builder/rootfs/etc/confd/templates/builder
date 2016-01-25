@@ -126,6 +126,14 @@ echo "" >> Dockerfile
 # inject builder-specific environment variables into the application environment
 echo "ENV GIT_SHA $GIT_SHA" >> Dockerfile
 
+puts-step "Running Hearst Digital Media customized builder"
+echo "     /\ /\    __  .__                 "
+echo "    / / \ \ _/  |_|  | _____    ______"
+echo "   / /   \ \\   __\  | \__  \  /  ___/"
+echo "  / /     \ \|  | |  |__/ __ \_\___ \ "
+echo " / /       \ \__| |____(____  /____  >"
+echo " \/         \/              \/     \/ "
+
 echo
 puts-step "Building Docker image"
 docker build -t $TMP_IMAGE . 2>&1
