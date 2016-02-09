@@ -4,6 +4,8 @@
 from __future__ import unicode_literals
 import io
 import logging
+import re
+import subprocess
 
 from django.conf import settings
 from rest_framework.exceptions import PermissionDenied
@@ -39,6 +41,7 @@ class DockerClient(object):
             repo = "{}/{}".format(self.registry, src_name)
         else:
             repo = src_name
+            self.login()  # login in case image is stored in ext private repository.
         self.pull(repo, src_tag)
 
         # tag the image locally without the repository URL
@@ -85,6 +88,23 @@ class DockerClient(object):
         logger.info("Tagging Docker image {} as {}:{}".format(image, repo, tag))
         if not self.client.tag(image, repo, tag=tag, force=True):
             raise docker.errors.DockerException("tagging failed")
+
+    def login(self):
+        if settings.PRIVATE_EXT_REGISTRY:
+            flavor = settings.PRIVATE_EXT_REGISTRY_FLAVOR.lower()
+            data = creds = settings.PRIVATE_EXT_REGISTRY_DATA
+            if flavor == 'ecr':
+                creds = self._get_ecr_creds(data['region'])
+
+            logger.info("Login to registry {0} with user {1}".format(creds['registry'], creds['username']))
+            result = self.client.login(**creds)
+            logger.info("Status: {0}".format(result['Status']))
+
+    def _get_ecr_creds(self, region):
+        login = subprocess.check_output(['aws', 'ecr', 'get-login', '--region', region])
+        fetch = re.match('docker\s+login\s+-u\s+(?P<username>.+)\s+-p\s+(?P<password>.+)\s+-e\s+(?P<email>.+)\s+(?P<registry>.+).*', login)
+        if fetch:
+            return fetch.groupdict()
 
 
 def check_blacklist(repo):
