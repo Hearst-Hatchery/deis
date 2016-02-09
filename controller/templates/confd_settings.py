@@ -70,3 +70,12 @@ GROUP_BASEDN = '{{ if exists "/deis/controller/auth/ldap/group/basedn" }}{{ getv
 GROUP_FILTER = '{{ if exists "/deis/controller/auth/ldap/group/filter" }}{{ getv "/deis/controller/auth/ldap/group/filter"}}{{ else }} {{ end }}'
 GROUP_TYPE = '{{ if exists "/deis/controller/auth/ldap/group/type" }}{{ getv "/deis/controller/auth/ldap/group/type"}}{{ else }} {{ end }}'
 {{ end }}
+
+#EXTERNAL REGISTRY AUTH
+PRIVATE_EXT_REGISTRY = False
+{{ if exists "/deis/controller/private_ext_registry/flavor" }}
+import json
+PRIVATE_EXT_REGISTRY = True
+PRIVATE_EXT_REGISTRY_FLAVOR = '{{ getv "/deis/controller/private_ext_registry/flavor" }}'
+PRIVATE_EXT_REGISTRY_DATA = json.loads('''{{ getv "/deis/controller/private_ext_registry/data" }}'''.replace("\'", '"'))
+{{ end }}
