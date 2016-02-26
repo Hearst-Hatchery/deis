@@ -640,7 +640,8 @@ class Container(UuidAuditedModel):
         image = self.release.image
         kwargs = {'memory': self.release.config.memory,
                   'cpu': self.release.config.cpu,
-                  'tags': self.release.config.tags}
+                  'tags': self.release.config.tags,
+                  'values': self.release.config.values}
         try:
             self._scheduler.create(
                 name=self.job_id,
@@ -854,7 +855,7 @@ class Release(UuidAuditedModel):
 
     @property
     def image(self):
-        return '{}:v{}'.format(self.app.id, str(self.version))
+        return self.build.image or '{}:v{}'.format(self.app.id, str(self.version))
 
     def new(self, user, config, build, summary=None, source_version='latest'):
         """
@@ -886,7 +887,7 @@ class Release(UuidAuditedModel):
             source_image = "{}:{}".format(source_image, source_tag)
         # If the build has a SHA, assume it's from deis-builder and in the deis-registry already
         deis_registry = bool(self.build.sha)
-        publish_release(source_image, self.config.values, self.image, deis_registry)
+        # publish_release(source_image, self.config.values, self.image, deis_registry)
 
     def previous(self):
         """
