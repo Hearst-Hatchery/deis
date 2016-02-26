@@ -438,7 +438,7 @@ AXES_USE_USER_AGENT = False
 AXES_COOLOFF_TIME = None
 # If set, specifies a logging mechanism for axes to use.
 # Default: 'axes.watch_login'
-AXES_LOGGER = 'axes.watch_login'
+AXES_LOGGER = 'api'
 # If set, specifies a template to render when a user is locked out.
 # Template receives cooloff_time and failure_limit as context variables.
 # Default: None
