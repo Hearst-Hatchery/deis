@@ -14,4 +14,5 @@ urlpatterns = patterns(
     url(r'^account/$', 'account', name='account'),
     url(r'^apps/$', 'apps', name='apps'),
     url(r'^support/$', 'support', name='support'),
+    url(r'^locked/$', 'locked_out', name='locked_out'),
 )

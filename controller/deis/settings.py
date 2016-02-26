@@ -446,7 +446,7 @@ AXES_LOCKOUT_TEMPLATE = None
 # If set, specifies a URL to redirect to on lockout.
 # If both AXES_LOCKOUT_TEMPLATE and AXES_LOCKOUT_URL are set, the template will be used.
 # Default: None
-AXES_LOCKOUT_URL = None
+AXES_LOCKOUT_URL = '/locked/'
 # If True, you'll see slightly more logging for Axes.
 # Default: True
 AXES_VERBOSE = True
