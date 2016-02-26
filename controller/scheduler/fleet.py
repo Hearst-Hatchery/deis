@@ -240,10 +240,9 @@ class FleetHTTPClient(AbstractSchedulerClient):
                 if attempt == (RETRIES - 1):  # account for 0 indexing
                     raise
 
-    def run(self, name, image, entrypoint, command):  # noqa
+    def run(self, name, image, command, **kwargs):  # noqa
         """Run a one-off command."""
-        self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE),
-                               entrypoint=entrypoint)
+        self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE), **kwargs)
         # launch the container
         self._put_unit(name, {'desiredState': 'launched'})
         # wait for the container to get scheduled

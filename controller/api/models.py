@@ -696,8 +696,10 @@ class Container(UuidAuditedModel):
             command = "'{}'".format(command)
         else:
             command = "-c '{}'".format(command)
+        kwargs = {'memory': self.release.config.memory, 'cpu': self.release.config.cpu,
+                  'tags': self.release.config.tags, 'values': self.release.config.values, 'entrypoint': entrypoint}
         try:
-            rc, output = self._scheduler.run(self.job_id, image, entrypoint, command)
+            rc, output = self._scheduler.run(self.job_id, image, command, **kwargs)
             return rc, output
         except Exception as e:
             err = '{} (run): {}'.format(self.job_id, e)
