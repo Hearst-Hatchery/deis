@@ -1,0 +1,22 @@
+{% extends "web/base.html" %}
+{% load humanize %}
+
+{% block title %}Locked Out{% endblock %}
+
+{% block content %}
+<div class="green">
+  <h1>Your account has been locked.</h1>
+    <div class="row-fluid well">
+        <form action="" method="post">
+            {% csrf_token %}
+
+            {{ form.captcha.errors }}
+            {{ form.captcha }}
+
+            <div class="form-actions">
+                <input type="submit" value="Submit" />
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
