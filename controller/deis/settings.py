@@ -117,6 +117,7 @@ MIDDLEWARE_CLASSES = (
     'api.middleware.APIVersionMiddleware',
     'deis.middleware.PlatformVersionMiddleware',
     'axes.middleware.FailedLoginMiddleware',
+    'axes.middleware.ViewDecoratorMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -455,3 +456,5 @@ AXES_USERNAME_FORM_FIELD = 'username'
 # If True prevents to login from IP under particular user if attempts limit exceed, otherwise lock out based on IP.
 # Default: False
 AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = False
+
+AXES_PROTECTED_LOGINS = '/v1/auth/login/'

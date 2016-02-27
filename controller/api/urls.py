@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.conf.urls import include, patterns, url
+from rest_framework.authtoken.views import obtain_auth_token
+from axes.decorators import watch_login
 
 from api import routers, views
 
