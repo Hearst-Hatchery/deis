@@ -21,3 +21,5 @@ simpleflock==0.0.2
 South==1.0.2
 static==1.1.1
 awscli
+django-simple-math-captcha==1.0.7
+git+https://github.com/DanHoerst/django-axes.git
