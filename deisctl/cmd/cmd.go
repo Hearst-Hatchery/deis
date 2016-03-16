@@ -160,7 +160,7 @@ func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 		"publisher", "router@*",
 	}
 	if stateless {
-		batch = []string{"registry@*", "controller", "builder", "publisher", "router@*"}
+		batch = []string{"controller", "publisher", "router@*"}
 	}
 	b.Start(batch, &bgwg, &trash, &trash)
 	// End background stuff.
@@ -168,7 +168,7 @@ func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 	fmt.Fprintln(Stdout, "Control plane...")
 	batch = []string{"database", "registry@*", "controller"}
 	if stateless {
-		batch = []string{"registry@*", "controller"}
+		batch = []string{"controller"}
 	}
 	b.Start(batch, wg, out, err)
 	wg.Wait()
@@ -224,7 +224,7 @@ func stopDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, 
 
 	fmt.Fprintln(out, "Control plane...")
 	if stateless {
-		b.Stop([]string{"controller", "builder", "registry@*"}, wg, out, err)
+		b.Stop([]string{"controller"}, wg, out, err)
 	} else {
 		b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, out, err)
 	}
@@ -327,7 +327,7 @@ func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGrou
 
 	fmt.Fprintln(out, "Control plane...")
 	if stateless {
-		b.Create([]string{"registry@1", "controller", "builder"}, wg, out, err)
+		b.Create([]string{"controller"}, wg, out, err)
 	} else {
 		b.Create([]string{"database", "registry@1", "controller", "builder"}, wg, out, err)
 	}
@@ -390,7 +390,7 @@ func uninstallAllServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 
 	fmt.Fprintln(out, "Control plane...")
 	if stateless {
-		b.Destroy([]string{"controller", "builder", "registry@*"}, wg, out, err)
+		b.Destroy([]string{"controller"}, wg, out, err)
 	} else {
 		b.Destroy([]string{"controller", "builder", "database", "registry@*"}, wg, out, err)
 	}
