@@ -8,6 +8,7 @@ import re
 import socket
 import time
 
+from collections import deque
 from django.conf import settings
 
 from . import AbstractSchedulerClient
@@ -114,8 +115,41 @@ class FleetHTTPClient(AbstractSchedulerClient):
             raise RuntimeError(errmsg)
         return json.loads(data)
 
-    # container api
+    def _get_available_azs(self):
+        machines = self._get_machines()['machines']
+        available_zones = set()
+        dataplane_machines = filter(lambda m: 'dataPlane' in m['metadata'], machines)
+        for machine in dataplane_machines:
+            # may be improved by making the az tag name an etcd key.
+            az = machine['metadata'].get('az', None)
+            if az and machine['metadata']['dataPlane'] == 'true':
+                available_zones.add(az)
+        return sorted(list(available_zones))
 
+    def _get_az_for(self, name):
+        availability_zones = self._get_available_azs()
+        azs_num = len(availability_zones)
+        name_parts = re.match(MATCH, name).groupdict()
+
+        container_num = int(name_parts['c_num'])
+        app = name_parts['app']
+        # using a hash function to rotate the availabity
+        # zone list, in a way that we take application name
+        # into account when we decide where to start
+        # the container number 1.
+        app_starting_at = abs(hash(app)) % azs_num
+        az_tag = {}
+        if availability_zones:
+            azs_list = deque(availability_zones)
+            azs_list.rotate(app_starting_at)
+            index = container_num % azs_num
+            az_tag = {
+                'az': azs_list[index-1]
+            }
+
+        return az_tag
+
+    # container api
     def create(self, name, image, command='', template=None, **kwargs):
         """Create a container."""
         self._create_container(name, image, command,
@@ -158,6 +192,11 @@ class FleetHTTPClient(AbstractSchedulerClient):
             f['value'] = f['value'].format(**l)
         # prepare tags only if one was provided
         tags = kwargs.get('tags', {})
+        # this way, if we specify the az tag it will be higher priority then the
+        # cross az feature.
+        azs = self._get_az_for(name)
+        azs.update(tags)
+        tags = azs
         tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.viewitems()])
         if settings.ENABLE_PLACEMENT_OPTIONS in ['true', 'True', 'TRUE', '1']:
             unit.append({"section": "X-Fleet", "name": "MachineMetadata",

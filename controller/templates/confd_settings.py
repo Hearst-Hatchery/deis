@@ -79,3 +79,4 @@ PRIVATE_EXT_REGISTRY = True
 PRIVATE_EXT_REGISTRY_FLAVOR = '{{ getv "/deis/controller/private_ext_registry/flavor" }}'
 PRIVATE_EXT_REGISTRY_DATA = json.loads('''{{ getv "/deis/controller/private_ext_registry/data" }}'''.replace("\'", '"'))
 {{ end }}
+
