@@ -85,7 +85,6 @@ PRIVATE_EXT_REGISTRY_DATA = json.loads('''{{ getv "/deis/controller/private_ext_
 # which means if list is ['a', 'b'], and it is the 3rd container of the same application,
 # we would do, 3 % 2 = 1 => az = list(1) => az=b
 AVAILABILITY_ZONE_LIST=[]
-
 {{ if exists "/deis/controller/AZs" }}
 AVAILABILITY_ZONE_LIST=json.loads('''{{ getv "/deis/controller/AZs" }}'''.replace("\'", '"'))
 {{ end }}
