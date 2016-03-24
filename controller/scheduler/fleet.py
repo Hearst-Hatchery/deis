@@ -116,12 +116,14 @@ class FleetHTTPClient(AbstractSchedulerClient):
 
     # container api
     def _get_az_for(self, name):
-        num = int(re.match(MATCH, name).groupdict()['c_num'])
+        container_num = int(re.match(MATCH, name).groupdict()['c_num'])
         az_tag = {}
         AZs = settings.AVAILABILITY_ZONE_LIST
         if AZs:
-            index = num % len(AZs)
-            az_tag = dict(az=AZs[index])
+            index = container_num % len(AZs)
+            az_tag = {
+                'az': AZs[index]
+            }
 
         return az_tag
 
