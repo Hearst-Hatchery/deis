@@ -115,6 +115,17 @@ class FleetHTTPClient(AbstractSchedulerClient):
         return json.loads(data)
 
     # container api
+    def _get_az_for(self, name):
+        container_num = int(re.match(MATCH, name).groupdict()['c_num'])
+        az_tag = {}
+        AZs = settings.AVAILABILITY_ZONE_LIST
+        if AZs:
+            index = container_num % len(AZs)
+            az_tag = {
+                'az': AZs[index]
+            }
+
+        return az_tag
 
     def create(self, name, image, command='', template=None, **kwargs):
         """Create a container."""
@@ -158,6 +169,11 @@ class FleetHTTPClient(AbstractSchedulerClient):
             f['value'] = f['value'].format(**l)
         # prepare tags only if one was provided
         tags = kwargs.get('tags', {})
+        # this way, if we specify the az tag it will be higher priority then the
+        # cross az feature.
+        azs = self._get_az_for(name)
+        azs.update(tags)
+        tags = azs
         tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.viewitems()])
         if settings.ENABLE_PLACEMENT_OPTIONS in ['true', 'True', 'TRUE', '1']:
             unit.append({"section": "X-Fleet", "name": "MachineMetadata",
