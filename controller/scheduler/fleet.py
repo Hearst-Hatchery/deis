@@ -135,7 +135,6 @@ class FleetHTTPClient(AbstractSchedulerClient):
     def _create_container(self, name, image, command, unit, **kwargs):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
-        azs = self._get_az_for(name)
         # prepare memory limit for the container type
         mem = kwargs.get('memory', {}).get(l['c_type'], None)
         if mem:
@@ -172,6 +171,7 @@ class FleetHTTPClient(AbstractSchedulerClient):
         tags = kwargs.get('tags', {})
         # this way, if we specify the az tag it will be higher priority then the
         # cross az feature.
+        azs = self._get_az_for(name)
         azs.update(tags)
         tags = azs
         tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.viewitems()])
