@@ -80,8 +80,3 @@ PRIVATE_EXT_REGISTRY_FLAVOR = '{{ getv "/deis/controller/private_ext_registry/fl
 PRIVATE_EXT_REGISTRY_DATA = json.loads('''{{ getv "/deis/controller/private_ext_registry/data" }}'''.replace("\'", '"'))
 {{ end }}
 
-# if defined, then scheduler will distribute the units cross that list.
-# it is a list of anything, the scheduler would pick az = AVAILABILITY_ZONE_LIST[num % len(AVAILABILITY_ZONE_LIST)]
-# which means if list is ['a', 'b'], and it is the 3rd container of the same application,
-# we would do, 3 % 2 = 1 => az = list(1) => az=b
-AVAILABILITY_ZONE_LIST={{ if exists "/deis/controller/AZs" }}json.loads('''{{ getv "/deis/controller/AZs" }}'''.replace("\'", '"')){{ else }}[]{{ end }}
