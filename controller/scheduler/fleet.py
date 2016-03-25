@@ -114,19 +114,30 @@ class FleetHTTPClient(AbstractSchedulerClient):
             raise RuntimeError(errmsg)
         return json.loads(data)
 
-    # container api
+    def _get_available_azs(self):
+        machines = self._get_machines()['machines']
+        available_zones = set()
+        dataplane_machines = filter(lambda m: 'dataPlane' in m['metadata'], machines)
+        for machine in dataplane_machines:
+            # may be improved by making the az tag name an etcd key.
+            az = machine['metadata'].get('az', None)
+            if az and machine['metadata']['dataPlane'] == 'true':
+                available_zones.add(az)
+        return sorted(list(available_zones))
+
     def _get_az_for(self, name):
+        availability_zones = self._get_available_azs()
         container_num = int(re.match(MATCH, name).groupdict()['c_num'])
         az_tag = {}
-        AZs = settings.AVAILABILITY_ZONE_LIST
-        if AZs:
-            index = container_num % len(AZs)
+        if availability_zones:
+            index = container_num % len(availability_zones)
             az_tag = {
-                'az': AZs[index]
+                'az': availability_zones[index-1]
             }
 
         return az_tag
 
+    # container api
     def create(self, name, image, command='', template=None, **kwargs):
         """Create a container."""
         self._create_container(name, image, command,
