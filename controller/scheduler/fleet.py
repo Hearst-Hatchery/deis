@@ -8,6 +8,7 @@ import re
 import socket
 import time
 
+from collections import deque
 from django.conf import settings
 
 from . import AbstractSchedulerClient
@@ -127,12 +128,23 @@ class FleetHTTPClient(AbstractSchedulerClient):
 
     def _get_az_for(self, name):
         availability_zones = self._get_available_azs()
-        container_num = int(re.match(MATCH, name).groupdict()['c_num'])
+        azs_num = len(availability_zones)
+        name_parts = re.match(MATCH, name).groupdict()
+
+        container_num = int(name_parts['c_num'])
+        app = name_parts['app']
+        # using a hash function to rotate the availabity
+        # zone list, in a way that we take application name
+        # into account when we decide where to start
+        # the container number 1.
+        app_starting_at = abs(hash(app)) % azs_num
         az_tag = {}
         if availability_zones:
-            index = container_num % len(availability_zones)
+            azs_list = deque(availability_zones)
+            azs_list.rotate(app_starting_at)
+            index = container_num % azs_num
             az_tag = {
-                'az': availability_zones[index-1]
+                'az': azs_list[index-1]
             }
 
         return az_tag
