@@ -77,7 +77,7 @@ func main() {
 
 	waitForInitialConfd(host+":"+etcdPort, timeout)
 
-	go launchConfd(host + ":" + etcdPort)
+	go launchConfd("http://" + host + ":" + etcdPort)
 
 	go publishService(client, hostEtcdPath, host, externalPort, uint64(ttl.Seconds()))
 
