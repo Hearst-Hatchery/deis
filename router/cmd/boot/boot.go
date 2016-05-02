@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"net"
 	"os"
 	"os/exec"
@@ -75,7 +76,7 @@ func main() {
 	// FIXME: have to launch cron first so generate-certs will generate the files nginx requires
 	go launchCron()
 
-	waitForInitialConfd(host+":"+etcdPort, timeout)
+	waitForInitialConfd("http://"+host+":"+etcdPort, timeout)
 
 	go launchConfd("http://" + host + ":" + etcdPort)
 
@@ -119,6 +120,8 @@ func waitForInitialConfd(etcd string, timeout time.Duration) {
 		if err == nil {
 			break
 		}
+
+		fmt.Println(err)
 
 		log.Info("waiting for confd to write initial templates...")
 		log.Debugf("\n%s", buffer.String())
