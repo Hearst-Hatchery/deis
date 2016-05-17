@@ -78,7 +78,17 @@ func main() {
 
 	waitForInitialConfd(host+":"+etcdPort, timeout)
 
-	go launchConfd(host + ":" + etcdPort)
+	ticker := time.NewTicker(5 * time.Second)
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				launchConfd(host + ":" + etcdPort)
+			}
+		}
+
+	}()
 
 	go publishService(client, hostEtcdPath, host, externalPort, uint64(ttl.Seconds()))
 
@@ -128,11 +138,17 @@ func waitForInitialConfd(etcd string, timeout time.Duration) {
 }
 
 func launchConfd(etcd string) {
-	cmd := exec.Command("confd", "-node", etcd, "--log-level", "error", "--interval", "5")
+	var buffer bytes.Buffer
+	output := bufio.NewWriter(&buffer)
+
+	cmd := exec.Command("confd", "-node", etcd, "-onetime", "--log-level", "error")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	if err := cmd.Start(); err != nil {
+	err := cmd.Run()
+	output.Flush()
+
+	if err != nil {
 		log.Warn("confd terminated by error: %v", err)
 	}
 }
