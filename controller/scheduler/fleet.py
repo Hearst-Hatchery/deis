@@ -170,14 +170,7 @@ class FleetHTTPClient(AbstractSchedulerClient):
             l.update({'cpu': '-c {}'.format(cpu)})
         else:
             l.update({'cpu': ''})
-        values = kwargs.get('values', {})
-        if values:
-            docker_envs = ""
-            for key, value in values.items():
-                docker_envs += "-e {}={} ".format(key, value)
-            l.update({'values': '{}'.format(docker_envs)})
-        else:
-            l.update({'values': ''})
+
         # set unit hostname
         l.update({'hostname': self._get_hostname(name)})
         # should a special entrypoint be used
@@ -187,6 +180,12 @@ class FleetHTTPClient(AbstractSchedulerClient):
         # encode command as utf-8
         if isinstance(l.get('command'), basestring):
             l['command'] = l['command'].encode('utf-8')
+
+        values = kwargs.get('values', {})
+        if values:
+            for key, value in values.items():
+                unit.insert(4, {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "echo '{key}={value}' >> /tmp/env_files/{name}"'''.format(key=key, value=value, name=name)})  # noqa
+
         # construct unit from template
         for f in unit:
             f['value'] = f['value'].format(**l)
@@ -201,6 +200,7 @@ class FleetHTTPClient(AbstractSchedulerClient):
         if settings.ENABLE_PLACEMENT_OPTIONS in ['true', 'True', 'TRUE', '1']:
             unit.append({"section": "X-Fleet", "name": "MachineMetadata",
                          "value": tagset + ' "dataPlane=true"'})
+
         # post unit to fleet
         self._put_unit(name, {"desiredState": "loaded", "options": unit})
 
@@ -417,8 +417,9 @@ CONTAINER_TEMPLATE = [
     {"section": "Unit", "name": "Description", "value": "{name}"},
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "IMAGE={image}; docker pull $IMAGE"'''},  # noqa
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
-    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE={image}; docker run --name {name} --rm {values} {memory} {cpu} {hostname} -P $IMAGE {command}"'''},  # noqa
-    {"section": "Service", "name": "ExecStop", "value": '''/usr/bin/docker stop {name}'''},
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "mkdir -p /tmp/env_files && echo '' > /tmp/env_files/{name}"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE={image}; docker run --name {name} --rm --env-file /tmp/env_files/{name} {memory} {cpu} {hostname} -P $IMAGE {command}"'''},  # noqa
+    {"section": "Service", "name": "ExecStop", "value": '''/bin/sh -c "docker stop {name}; rm /tmp/env_files/{name}"'''},  # noqa
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
     {"section": "Service", "name": "TimeoutStopSec", "value": "10"},
     {"section": "Service", "name": "RestartSec", "value": "5"},
@@ -430,6 +431,7 @@ RUN_TEMPLATE = [
     {"section": "Unit", "name": "Description", "value": "{name} admin command"},
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "IMAGE={image}; docker pull $IMAGE"'''},  # noqa
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
-    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE={image}; docker run --name {name} {values} --entrypoint={entrypoint} -a stdout -a stderr $IMAGE {command}"'''},  # noqa
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "mkdir -p /tmp/env_files && echo '' > /tmp/env_files/{name}"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE={image}; docker run --name {name} --env-file /tmp/env_files/{name} --entrypoint={entrypoint} -a stdout -a stderr $IMAGE {command}; rm /tmp/env_files/{name}"'''},  # noqa
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
 ]
