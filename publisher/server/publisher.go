@@ -141,7 +141,7 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 				}
 				healthcheckMethod := s.getEtcd(configKey + "healthcheck_method")
 				if healthcheckMethod == "" {
-					healthCheckMethod = "HEAD"
+					healthcheckMethod = "HEAD"
 				}
 				healthcheckTimeout := s.getEtcd(configKey + "healthcheck_timeout")
 				if healthcheckTimeout != "" {
@@ -212,7 +212,7 @@ func (s *Server) IsPortOpen(hostAndPort string) bool {
 	return portOpen
 }
 
-func (s *Server) HealthCheckOK(url string, method, delay, timeout int) bool {
+func (s *Server) HealthCheckOK(url string, method string, delay, timeout int) bool {
 	// sleep for the initial delay
 	time.Sleep(time.Duration(delay) * time.Second)
 	client := http.Client{
