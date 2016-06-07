@@ -406,13 +406,14 @@ class App(UuidAuditedModel):
     def _do_healthcheck(self, containers, config):
         path = config.get('HEALTHCHECK_URL', '/')
         timeout = int(config.get('HEALTHCHECK_TIMEOUT', 1))
+        method = config.get('HEALTHCHECK_METHOD', 'HEAD')
         if not _etcd_client:
             raise exceptions.HealthcheckException('no etcd client available')
         for container in containers:
             try:
                 key = "/deis/services/{self}/{container.job_id}".format(**locals())
                 url = "http://{}{}".format(_etcd_client.get(key).value, path)
-                response = requests.get(url, timeout=timeout)
+                response = requests.request(method, url, timeout=timeout)
                 if response.status_code != requests.codes.OK:
                     raise exceptions.HealthcheckException(
                         "app failed health check (got '{}', expected: '200')".format(
