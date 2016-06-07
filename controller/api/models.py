@@ -353,7 +353,7 @@ class App(UuidAuditedModel):
         """Creates and starts containers via the scheduler"""
         if not to_add:
             return
-        create_threads = [Thread(target=c.create) for c in to_add]
+        create_threads = [Thread(target=c.create, args=(c.release.image,)) for c in to_add]
         start_threads = [Thread(target=c.start) for c in to_add]
         [t.start() for t in create_threads]
         [t.join() for t in create_threads]
@@ -637,8 +637,7 @@ class Container(UuidAuditedModel):
         return c
 
     @close_db_connections
-    def create(self):
-        image = self.release.image
+    def create(self, image):
         kwargs = {'memory': self.release.config.memory,
                   'cpu': self.release.config.cpu,
                   'tags': self.release.config.tags,
