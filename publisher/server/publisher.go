@@ -139,6 +139,10 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 				} else {
 					delay = 0
 				}
+				healthcheckMethod := s.getEtcd(configKey + "healthcheck_method")
+				if healthcheckMethod == "" {
+					healthcheckMethod = "HEAD"
+				}
 				healthcheckTimeout := s.getEtcd(configKey + "healthcheck_timeout")
 				if healthcheckTimeout != "" {
 					timeout, err = strconv.Atoi(healthcheckTimeout)
@@ -150,7 +154,7 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 					timeout = 1
 				}
 				if healthcheckURL != "" {
-					if !s.HealthCheckOK("http://"+hostAndPort+healthcheckURL, delay, timeout) {
+					if !s.HealthCheckOK("http://"+hostAndPort+healthcheckURL, healthcheckMethod, delay, timeout) {
 						continue
 					}
 				}
@@ -208,13 +212,14 @@ func (s *Server) IsPortOpen(hostAndPort string) bool {
 	return portOpen
 }
 
-func (s *Server) HealthCheckOK(url string, delay, timeout int) bool {
+func (s *Server) HealthCheckOK(url string, method string, delay, timeout int) bool {
 	// sleep for the initial delay
 	time.Sleep(time.Duration(delay) * time.Second)
 	client := http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 	}
-	resp, err := client.Get(url)
+	req, err := http.NewRequest(method, url, nil)
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("an error occurred while performing a health check at %s (%v)\n", url, err)
 		return false
