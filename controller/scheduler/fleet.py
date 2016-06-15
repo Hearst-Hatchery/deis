@@ -422,7 +422,7 @@ CONTAINER_TEMPLATE = [
     {"section": "Service", "name": "ExecStop", "value": '''/bin/sh -c "docker stop {name}; rm /tmp/env_files/{name}"'''},  # noqa
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
     {"section": "Service", "name": "TimeoutStopSec", "value": "10"},
-    {"section": "Service", "name": "RestartSec", "value": "5"},
+    {"section": "Service", "name": "RestartSec", "value": "90"},
     {"section": "Service", "name": "Restart", "value": "on-failure"},
 ]
 
