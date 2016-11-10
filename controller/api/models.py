@@ -660,7 +660,8 @@ class Container(UuidAuditedModel):
         kwargs = {'memory': self.release.config.memory,
                   'cpu': self.release.config.cpu,
                   'tags': self.release.config.tags,
-                  'values': self.release.config.values}
+                  'values': self.release.config.values,
+                  'aname': self.app.id}
         try:
             self._scheduler.create(
                 name=self.job_id,
@@ -715,8 +716,12 @@ class Container(UuidAuditedModel):
             command = "'{}'".format(command)
         else:
             command = "-c '{}'".format(command)
-        kwargs = {'memory': self.release.config.memory, 'cpu': self.release.config.cpu,
-                  'tags': self.release.config.tags, 'values': self.release.config.values, 'entrypoint': entrypoint}
+        kwargs = {'memory': self.release.config.memory,
+                  'cpu': self.release.config.cpu,
+                  'tags': self.release.config.tags,
+                  'values': self.release.config.values,
+                  'entrypoint': entrypoint,
+                  'aname': self.app.id}
         try:
             rc, output = self._scheduler.run(self.job_id, image, command, **kwargs)
             return rc, output
