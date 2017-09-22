@@ -425,7 +425,7 @@ CONTAINER_TEMPLATE = [
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "IMAGE={image}; docker pull $IMAGE"'''},  # noqa
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "mkdir -p /tmp/env_files && echo '' > /tmp/env_files/{name}"'''},  # noqa
-    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE={image}; docker run --name {name} --rm --env-file /tmp/env_files/{name} {memory} {cpu} {hostname} {aname} -P $IMAGE {command}"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE={image}; docker run --log-opt max-size=500m --name {name} --rm --env-file /tmp/env_files/{name} {memory} {cpu} {hostname} {aname} -P $IMAGE {command}"'''},  # noqa
     {"section": "Service", "name": "ExecStop", "value": '''/bin/sh -c "docker stop {name}; rm /tmp/env_files/{name}"'''},  # noqa
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
     {"section": "Service", "name": "TimeoutStopSec", "value": "10"},
