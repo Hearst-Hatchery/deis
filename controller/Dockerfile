@@ -3,9 +3,6 @@ FROM alpine:3.2
 # install common packages
 RUN apk add --update-cache curl bash sudo && rm -rf /var/cache/apk/*
 
-# install etcdctl
-RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-deis/etcdctl-v0.4.9 \
-    && chmod +x /usr/local/bin/etcdctl
 
 # install confd
 RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.10.0/confd-0.10.0-linux-amd64 \
@@ -28,5 +25,7 @@ ADD . /app
 
 # Create static resources
 RUN /app/manage.py collectstatic --settings=deis.settings --noinput
+
+RUN mv /app/bin/etcdctl /usr/local/bin/etcdctl
 
 ENV DEIS_RELEASE 1.12.2
