@@ -1,6 +1,6 @@
 FROM quay.io/hearst/deis-router:v.1.12.2-21-af7012a
 
-COPY rootfs /
+COPY rootfs/etc/confd/templates/nginx.conf /etc/confd/templates/nginx.conf
 
 CMD ["boot"]
 EXPOSE 80 2222 9090
